@@ -1,7 +1,7 @@
 docker-compose up
 hit localhost:3000
 
-Steps I took to create this sample project:
+Steps I took to create this example project:
 
 using fish shell:
 
@@ -10,12 +10,10 @@ frontend:
   - yarn create react-app frontend
 
 backend:
-  - docker run -it --rm -v (pwd)/merv:/code elixir:alpine sh
+  - docker run -it --rm -v (pwd):/code elixir:alpine sh
   - mix archive.install hex phx_new
   - mix phx.new backend --no-ecto --no-gettext --no-html --no-live --no-assets
-  - make this conf change noted in the default comment
+  - make this conf change noted in the default comment (needed for docker-compose)
     # file: config/dev.exs
     # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
     http: [ip: {0, 0, 0, 0}, port: 4000],
-
-Also, study the docker-compose file.  It is VERY deliberately crafted.
