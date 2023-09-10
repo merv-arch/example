@@ -1,0 +1,17 @@
+docker-compose up
+hit localhost:3000
+
+Steps I took to create this sample project:
+
+using fish shell:
+
+frontend:
+  - docker run -it --rm -v (pwd):/code node:alpine sh
+  - yarn create react-app frontend
+
+backend:
+  - docker run -it --rm -v (pwd)/merv:/code elixir:alpine sh
+  - mix archive.install hex phx_new
+  - mix phx.new backend --no-ecto --no-gettext --no-html --no-live --no-assets
+
+Also, study the docker-compose file.  It is VERY deliberately crafted.

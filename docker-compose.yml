@@ -1,0 +1,76 @@
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: docker/Dockerfile
+    init: true
+    volumes:
+      - ./backend:/app
+      - backend-_build:/app/_build
+    command:
+      - /app/docker/compose_command.sh
+    depends_on:
+      - postgres
+      - mongo
+    ports:
+      - 4000:4000
+    environment:
+      POSTGRES_HOSTNAME: postgres
+      POSTGRES_EVENT_STORE_DB: backend_es
+      POSTGRES_ECTO_DB: backend_ecto
+      MONGO_HOSTNAME: mongo
+      MONGO_DB: backend
+    networks:
+      - internal
+      - external
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: docker/Dockerfile
+    init: true
+    volumes:
+      - ./frontend:/app
+      - frontend-node_modules:/app/node_modules
+    command:
+      - /app/docker/compose_command.sh
+    depends_on:
+      - backend
+    ports:
+      - 3000:3000
+    networks:
+      - external
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    networks:
+      - internal
+
+  mongo:
+    image: mongo:latest
+    command: [ "--bind_ip_all", "--replSet", "rs0" ]
+    networks:
+      - internal
+
+  mongo_rs_init_on_countdown:
+    image: mongo:latest
+    command: >
+      sh -c "sleep 3 && mongosh --host mongo:27017 --eval 'config = { _id: \"rs0\", \"members\": [{ _id: 0, host: \"mongo\" }]}; try{db.adminCommand({ replSetGetStatus: 1 })}catch(e){rs.initiate(config)}'"
+    networks:
+      - internal
+    depends_on:
+      - mongo
+
+volumes:
+# I do:
+# {service}-{directory_name}
+  frontend-node_modules:
+  backend-_build:
+
+networks:
+  internal:
+  external:
