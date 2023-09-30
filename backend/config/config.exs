@@ -7,6 +7,15 @@
 # General application configuration
 import Config
 
+config :backend, Backend.EventStore,
+  serializer: Backend.JsonSerializer,
+  username: "postgres",
+  password: "postgres",
+  database: System.get_env("POSTGRES_EVENT_STORE_DB"),
+  hostname: System.get_env("POSTGRES_HOSTNAME")
+
+config :backend, event_stores: [Backend.EventStore]
+
 # Configures the endpoint
 config :backend, BackendWeb.Endpoint,
   url: [host: "localhost"],

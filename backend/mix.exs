@@ -39,7 +39,11 @@ defmodule Backend.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:jason, "~> 1.2"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug_cowboy, "~> 2.5"},
+      {:eventstore, "~> 1.4"},
+      {:uuid, "~> 1.1"},
+      {:mongodb_driver, "~> 1.0.0"},
+      {:corsica, "~> 2.1.2"}
     ]
   end
 
@@ -51,7 +55,12 @@ defmodule Backend.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"]
+      setup: [
+        "deps.get",
+        "deps.compile",
+        "event_store.create",
+        "event_store.init"
+      ]
     ]
   end
 end

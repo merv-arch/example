@@ -8,7 +8,7 @@ defmodule BackendWeb.Router do
   scope "/", BackendWeb do
     pipe_through :api
 
-    post "command", CommandsController, :command
+    post "/command", CommandsController, :command
   end
 
 

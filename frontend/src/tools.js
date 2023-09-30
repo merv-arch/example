@@ -1,5 +1,5 @@
 export const command = ({ command, data }) =>
-  fetch(`https://${process.env.REACT_APP_NEO_HOST}/c`, {
+  fetch(`http://${process.env.REACT_APP_BACKEND_HOST}/command`, {
     method: 'POST',
     headers: {
       Accept: 'application/json',

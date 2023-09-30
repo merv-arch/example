@@ -8,10 +8,11 @@ defmodule Backend.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      # Start the Telemetry supervisor
+      Backend.EventStore,
       BackendWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Backend.PubSub},
+      AllEventsSubscriber,
       # Start Finch
       {Finch, name: Backend.Finch},
       # Start the Endpoint (http/https)
