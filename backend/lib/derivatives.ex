@@ -32,6 +32,7 @@ defmodule Derivatives do
       %{
         id: event.data["order_id"],
         session_id: event.data["session_id"],
+        name: event.data["name"],
         product_id: event.data["product_id"],
         status: "placed",
         created_at: event.created_at

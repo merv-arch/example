@@ -1,17 +1,17 @@
-import { useContext } from 'react'
+import { useState, useContext } from 'react'
 import {
   Button, Heading, Box, FormControl, FormLabel, Input, Flex,
   Center
 } from '@chakra-ui/react'
-import { useState } from 'react'
 import { command } from 'tools'
 import { useQuery, gql } from '@apollo/client'
 import { SessionContext } from 'SessionStore'
+import { SessionChannelContext } from 'SessionChannelStore'
+import { useEventHandler } from '@ericlathrop/phoenix-js-react-hooks'
 
 const App = () => {
   const [name, setName] = useState('')
   const [productId, setProductId] = useState('')
-  const [currentOrder, setCurrentOrder] = useState(null)
   const sessionId = useContext(SessionContext)
 
   const onClickPlaceOrder = () =>
@@ -128,7 +128,11 @@ const GET_ORDER = gql`
   }
 `
 
-const CurrentOrder = ({ id }) => {
+const CurrentOrder = () => {
+  const [id, setId] = useState(null)
+  const sessionChannel = useContext(SessionChannelContext)
+
+  useEventHandler(sessionChannel, 'OrderInserted', data => { setId(data.id) })
   const { data, loading, refetch } = useQuery(GET_ORDER, {
     variables: { id }
   })
