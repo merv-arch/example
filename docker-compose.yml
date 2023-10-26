@@ -50,14 +50,14 @@ services:
       PGDATA: /var/lib/postgresql/data
     networks:
       - internal
-    depends_on:
-      - mongo_rs_init_on_countdown
 
   mongo:
     image: mongo:latest
     command: [ "--bind_ip_all", "--replSet", "rs0" ]
     networks:
       - internal
+    depends_on:
+      - mongo_rs_init_on_countdown
 
   mongo_rs_init_on_countdown:
     image: mongo:latest
