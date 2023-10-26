@@ -5,7 +5,7 @@ defmodule Backend.MixProject do
     [
       app: :backend,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -43,7 +43,9 @@ defmodule Backend.MixProject do
       {:eventstore, "~> 1.4"},
       {:uuid, "~> 1.1"},
       {:mongodb_driver, "~> 1.0.0"},
-      {:corsica, "~> 2.1.2"}
+      {:corsica, "~> 2.1.2"},
+      {:absinthe, "~> 1.7.0"},
+      {:absinthe_plug, "~> 1.5"}
     ]
   end
 

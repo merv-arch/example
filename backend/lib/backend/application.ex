@@ -13,6 +13,14 @@ defmodule Backend.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Backend.PubSub},
       AllEventsSubscriber,
+      {
+        Mongo,
+        name: :mongo,
+        seeds: Application.fetch_env!(:backend, :mongo_seeds),
+        database: Application.fetch_env!(:backend, :mongo_database),
+        pool_size: Application.fetch_env!(:backend, :mongo_pool_size)
+      },
+      MongoDatabaseWatcher,
       # Start Finch
       {Finch, name: Backend.Finch},
       # Start the Endpoint (http/https)

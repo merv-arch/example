@@ -26,6 +26,11 @@ config :backend, BackendWeb.Endpoint,
   pubsub_server: Backend.PubSub,
   live_view: [signing_salt: "/YNQee88"]
 
+config :backend,
+  mongo_seeds: [System.get_env("MONGO_HOSTNAME")],
+  mongo_database: System.get_env("MONGO_DATABASE"),
+  mongo_pool_size: 10
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails

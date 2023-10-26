@@ -6,21 +6,25 @@ defmodule Commands do
       "PlaceOrder",
       %{
         "name" => name,
-        "product" => product
+        "productId" => product_id,
+        "sessionId" => session_id
       },
       metadata
     ) do
     # our business doesn't take orders from anyone named Corey
+    # just a silly example of this being a place to put your
+    # business logic checks
     unless name == "Corey" do
       new_id = UUID.uuid4()
 
       events = [
         %EventData{
-          event_type: "OrderCreated",
+          event_type: "OrderPlaced",
           data: %{
             order_id: new_id,
+            session_id: session_id,
             name: name,
-            product: product
+            product_id: product_id
           },
           metadata: %{some: "metadata"}
         }
@@ -30,7 +34,7 @@ defmodule Commands do
 
       {:ok, %{}}
     else
-      {:refused, "No, Corey"}
+      {:refused, "No Corey's Allowed"}
     end
   end
 end

@@ -18,9 +18,9 @@ services:
     environment:
       POSTGRES_HOSTNAME: postgres
       POSTGRES_EVENT_STORE_DB: backend_es
-      POSTGRES_ECTO_DB: backend_ecto
+      # POSTGRES_ECTO_DB: backend_ecto
       MONGO_HOSTNAME: mongo
-      MONGO_DB: backend
+      MONGO_DATABASE: backend
     networks:
       - internal
       - external
@@ -50,6 +50,8 @@ services:
       PGDATA: /var/lib/postgresql/data
     networks:
       - internal
+    depends_on:
+      - mongo_rs_init_on_countdown
 
   mongo:
     image: mongo:latest
@@ -60,11 +62,9 @@ services:
   mongo_rs_init_on_countdown:
     image: mongo:latest
     command: >
-      sh -c "sleep 3 && mongosh --host mongo:27017 --eval 'config = { _id: \"rs0\", \"members\": [{ _id: 0, host: \"mongo\" }]}; try{db.adminCommand({ replSetGetStatus: 1 })}catch(e){rs.initiate(config)}'"
+      sh -c "sleep 5 && mongosh --host mongo:27017 --eval 'config = { _id: \"rs0\", \"members\": [{ _id: 0, host: \"mongo\" }]}; try{db.adminCommand({ replSetGetStatus: 1 })}catch(e){rs.initiate(config)}'"
     networks:
       - internal
-    depends_on:
-      - mongo
 
 volumes:
 # I'm forced to use named volumes because of how I "docker-compose run" into containers to run dev commands (yarn add, mix deps.get, ...)

@@ -2,7 +2,7 @@ defmodule Effects do
   alias Backend.EventStore
 
   @map %{
-    "OrderCreated" => ["CacheOrder", "NotifyFulfillment"]
+    "OrderPlaced" => ["CacheOrder"]
   }
 
   def handle(event) do
@@ -11,12 +11,12 @@ defmodule Effects do
   end
 
   defp handle("CacheOrder", event) do
-    # pickup = Derivatives.Pickup.by_id(event.data["pickup_id"])
-    # Mongo.find_one_and_replace(:mongo, "orders", %{id: pickup.id}, pickup, upsert: true)
-  end
-
-  defp handle("NotifyFulfillment", event) do
-    # pickup = Derivatives.Pickup.by_id(event.data["pickup_id"])
-    # Mongo.find_one_and_replace(:mongo, "orders", %{id: pickup.id}, pickup, upsert: true)
+    Mongo.find_one_and_replace(
+      :mongo,
+      "orders",
+      %{id: event.data["order_id"]},
+      Derivatives.Order.by_id(event.data["order_id"]),
+      upsert: true
+    )
   end
 end
