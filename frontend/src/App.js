@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react'
 import {
   Button, Heading, Box, FormControl, FormLabel, Input, Flex,
-  Center
+  Center, Text
 } from '@chakra-ui/react'
 import { command } from 'tools'
 import { useQuery, gql } from '@apollo/client'
@@ -13,6 +13,10 @@ const App = () => {
   const [name, setName] = useState('')
   const [productId, setProductId] = useState('')
   const sessionId = useContext(SessionContext)
+  const sessionChannel = useContext(SessionChannelContext)
+  const [currentOrderId, setCurrentOrderId] = useState(null)
+
+  useEventHandler(sessionChannel, 'OrderInserted', data => { setCurrentOrderId(data.id) })
 
   const onClickPlaceOrder = () =>
     command({
@@ -23,8 +27,8 @@ const App = () => {
         sessionId
       }
     })
-      .then(res => res.ok || res.text())
-      .then(text => window.alert(text))
+      .then(res => { if (res.ok) { return null } else { throw res } })
+      .catch(e => e.text().then(e => window.alert(e)))
 
   return (
     <Box p='5'>
@@ -40,32 +44,32 @@ const App = () => {
         <Heading size='md'>
           Example lifecycle of an Order
         </Heading>
-        <Flex>
+
+        <Flex maxW='920'>
           <Box p={3} border='2px solid gray'>
             <Heading size='md'>
               Create an order
             </Heading>
 
-            <Box maxW='1040px' mt={5}>
-              <Box mb={4}>
-                <FormControl w='250px'>
-                  <FormLabel fontWeight='bold'>Name</FormLabel>
-                  <Input value={name} onChange={e => setName(e.target.value)} />
-                </FormControl>
+            <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
+              <FormControl>
+                <FormLabel fontWeight='bold'>Name</FormLabel>
+                <Input value={name} onChange={e => setName(e.target.value)} />
+              </FormControl>
 
-                <FormControl w='250px'>
-                  <FormLabel fontWeight='bold'>Product ID</FormLabel>
-                  <Input value={productId} onChange={e => setProductId(e.target.value)} />
-                </FormControl>
-              </Box>
+              <FormControl>
+                <FormLabel fontWeight='bold'>Product ID</FormLabel>
+                <Input value={productId} onChange={e => setProductId(e.target.value)} />
+              </FormControl>
+
+              <Button
+                mt={3}
+                isDisabled={name.trim().length === 0 || productId.trim().length === 0}
+                onClick={onClickPlaceOrder}
+              >
+                Place Order
+              </Button>
             </Box>
-
-            <Button
-              isDisabled={name.trim().length === 0 || productId.trim().length === 0}
-              onClick={onClickPlaceOrder}
-            >
-              Place Order
-            </Button>
 
             <pre p='0'>
               <Box fontSize='13px'>
@@ -106,13 +110,17 @@ fetch('http://your-server/command', {
           </Box>
 
           <Center>
-            <Box fontSize='100px'>
+            <Box fontSize='90'>
               &#8594;
             </Box>
           </Center>
 
           <Box p={3} border='2px solid gray'>
-            <CurrentOrder id='123' />
+            {currentOrderId &&
+              <CurrentOrder id={currentOrderId} />}
+
+            {!currentOrderId &&
+              <>No order yet</>}
           </Box>
         </Flex>
       </Box>
@@ -128,19 +136,108 @@ const GET_ORDER = gql`
   }
 `
 
-const CurrentOrder = () => {
-  const [id, setId] = useState(null)
-  const sessionChannel = useContext(SessionChannelContext)
+const CurrentOrder = ({ id }) => {
+  const [orderCopy, setOrderCopy] = useState({})
 
-  useEventHandler(sessionChannel, 'OrderInserted', data => { setId(data.id) })
-  const { data, loading, refetch } = useQuery(GET_ORDER, {
-    variables: { id }
+  const { data } = useQuery(GET_ORDER, {
+    variables: { id },
+    onCompleted: data => setOrderCopy(data.order)
   })
 
-  return (
-    JSON.stringify(data?.order, 4)
-  )
+  const onClickEditOrder = () => {}
 
+  const updatedAttributes =
+    Object.entries(orderCopy)
+      .reduce((acc, [key, value]) => {
+        if (value !== data.order[key]) {
+          return { ...acc, [key]: value }
+        } else {
+          return acc
+        }
+      }, {})
+
+  const allowSave =
+    Object.entries(updatedAttributes).length > 0 &&
+    orderCopy.name.trim().length > 2 &&
+    orderCopy.productId.trim().length > 2
+
+  return (
+    <>
+      <Heading size='md' mb='5'>
+        "Update" order attributes
+      </Heading>
+
+      {(data &&
+        <>
+          Current order data
+          <pre style={{ fontSize: '11.5px' }}>
+            {JSON.stringify(data?.order, null, 2)}
+          </pre>
+
+          <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
+            <FormControl w='250px'>
+              <FormLabel fontWeight='bold'>Name</FormLabel>
+              <Input
+                value={orderCopy.name || ''}
+                onChange={e => setOrderCopy({ ...orderCopy, name: e.target.value })}
+              />
+            </FormControl>
+
+            <FormControl w='250px'>
+              <FormLabel fontWeight='bold'>Product ID</FormLabel>
+              <Input
+                value={orderCopy.productId || ''}
+                onChange={e => setOrderCopy({ ...orderCopy, productId: e.target.value })}
+              />
+            </FormControl>
+
+            <Button
+              mt={3}
+              isDisabled={!allowSave}
+              onClick={onClickEditOrder}
+            >
+              Save
+            </Button>
+          </Box>
+
+          <pre p='0'>
+            {allowSave &&
+            <>
+              Pressing save will send this to the backend
+              <Box fontSize='13px'>
+                {`
+  fetch('http://your-server/command', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      command: 'UpdateOrderAttributes',
+      data: {
+        orderId: '${data?.order.id}'
+        updatedAttributes: {
+          ${Object.entries(updatedAttributes)
+            .reduce((acc, [key, value]) =>
+              (`${acc}${acc.length > 0 ? '          ' : ''}${key}: '${value.trim()}',\n`),
+            '').slice(0, -2)}
+        }
+      }
+    })
+  })
+              `}
+              </Box>
+            </> ||
+              <Box>
+                Make some valid edits
+                <br />(at least 3 chars in each field)
+              </Box>
+            }
+          </pre>
+        </>
+      )}
+    </>
+  )
 }
 
 export default App
