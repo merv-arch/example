@@ -28,7 +28,7 @@ defmodule Derivatives do
       |> Enum.reduce(%{}, fn event, acc -> on(event, acc) end)
     end
 
-    defp on(%{event_type: "OrderPlaced"} = event, _acc) do
+    defp on(%{event_type: "PlacedOrder"} = event, _acc) do
       %{
         id: event.data["order_id"],
         session_id: event.data["session_id"],
@@ -39,13 +39,10 @@ defmodule Derivatives do
       }
     end
 
-    defp on(%{event_type: "OrderUpdated"} = event, acc) do
+    defp on(%{event_type: "UpdateOrderAttributes"} = event, acc) do
       Map.merge(
         acc,
-        %{
-          completed_at: event.created_at,
-          status: "completed"
-        }
+        MapHelpers.atomize_keys(event.data["updated_attributes"])
       )
     end
   end

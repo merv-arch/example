@@ -7,3 +7,5 @@ export const command = ({ command, data }) =>
     },
     body: JSON.stringify({ command, data })
   })
+
+export const withoutKey = (key, { [key]: _, ...rest }) => rest

@@ -2,7 +2,8 @@ defmodule Effects do
   alias Backend.EventStore
 
   @map %{
-    "OrderPlaced" => ["CacheOrder"]
+    "PlacedOrder" => ["CacheOrder"],
+    "UpdateOrderAttributes" => ["CacheOrder"]
   }
 
   def handle(event) do

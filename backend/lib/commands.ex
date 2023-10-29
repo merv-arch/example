@@ -19,7 +19,7 @@ defmodule Commands do
 
       events = [
         %EventData{
-          event_type: "OrderPlaced",
+          event_type: "PlacedOrder",
           data: %{
             order_id: new_id,
             session_id: session_id,
@@ -37,4 +37,30 @@ defmodule Commands do
       {:refused, "No Corey's Allowed"}
     end
   end
+
+  # def handle(
+  #     "UpdateOrderAttributes",
+  #     %{
+  #       "orderId" => order_id,
+  #       "updatedAttributes" => updated_attributes,
+  #       "userName" => user_name
+  #     },
+  #     metadata
+  #   ) do
+  #   events = [
+  #     %EventData{
+  #       event_type: "UpdatedOrderAttributes",
+  #       data: %{
+  #         order_id: new_id,
+  #         user_name: user_name,
+  #         updated_attributes: updated_attributes
+  #       },
+  #       metadata: %{some: "metadata"}
+  #     }
+  #   ]
+
+  #   EventStore.append_to_stream("Order:#{new_id}", :any_version, events)
+
+  #   {:ok, %{}}
+  # end
 end

@@ -3,7 +3,7 @@ import {
   Button, Heading, Box, FormControl, FormLabel, Input, Flex,
   Center, Text
 } from '@chakra-ui/react'
-import { command } from 'tools'
+import { command, withoutKey } from 'tools'
 import { useQuery, gql } from '@apollo/client'
 import { SessionContext } from 'SessionStore'
 import { SessionChannelContext } from 'SessionChannelStore'
@@ -36,77 +36,62 @@ const App = () => {
         Merv demo
       </Heading>
 
-      <Heading size='sm' mb='5'>
-        Most of the time a web backend is either creating things or updating things.  Merv handles it very differently on the backend, but of course you can end with the same result.
-      </Heading>
-
       <Box>
-        <Heading size='md'>
-          Example lifecycle of an Order
+        <Heading size='md' m='2' pb='4'>
+          Example lifecycle of an "Order" as a Stream of Events
         </Heading>
 
         <Flex maxW='920'>
           <Box p={3} border='2px solid gray'>
             <Heading size='md'>
-              Create an order
+              Available actions:
             </Heading>
 
-            <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
-              <FormControl>
-                <FormLabel fontWeight='bold'>Name</FormLabel>
-                <Input value={name} onChange={e => setName(e.target.value)} />
-              </FormControl>
+            <Box p={3} border='2px solid gray'>
+              <Heading size='md'>
+                Create an order
+              </Heading>
 
-              <FormControl>
-                <FormLabel fontWeight='bold'>Product ID</FormLabel>
-                <Input value={productId} onChange={e => setProductId(e.target.value)} />
-              </FormControl>
+              <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
+                <FormControl>
+                  <FormLabel fontWeight='bold'>Name</FormLabel>
+                  <Input value={name} onChange={e => setName(e.target.value)} />
+                </FormControl>
 
-              <Button
-                mt={3}
-                isDisabled={name.trim().length === 0 || productId.trim().length === 0}
-                onClick={onClickPlaceOrder}
-              >
-                Place Order
-              </Button>
-            </Box>
+                <FormControl>
+                  <FormLabel fontWeight='bold'>Product ID</FormLabel>
+                  <Input value={productId} onChange={e => setProductId(e.target.value)} />
+                </FormControl>
 
-            <pre p='0'>
-              <Box fontSize='13px'>
-                {`
-fetch('http://your-server/command', {
-  method: 'POST',
-  headers: {
-    Accept: 'application/json',
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    command: 'PlaceOrder',
-    data: {
-      name: '${name}',
-      product_id: '${productId.trim()}'
-    }
-  })
-})
-                `}
+                <Button
+                  mt={3}
+                  isDisabled={name.trim().length === 0 || productId.trim().length === 0}
+                  onClick={onClickPlaceOrder}
+                >
+                  Place Order
+                </Button>
               </Box>
-            </pre>
 
-            <Box>
-              If we're thinking in terms of <a href='https://www.freecodecamp.org/news/crud-operations-crud-definition-in-programming/' target='_blank'>C.R.U.D.</a>, this command is the C.
-              <br />
-              This command results in a new Stream "Order#{`{new uuid}`}"
+              <pre p='0'>
+                <Box fontSize='13px'>
+                  {`fetch('https://your-server/command', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      command: 'PlaceOrder',
+      data: {
+        name: '${name}',
+        product_id: '${productId.trim()}'
+      }
+    })
+  })`}
+                </Box>
+              </pre>
             </Box>
 
-            <Box>
-              This new stream will have a single Event linked to it:
-              <br />
-              'OrderPlaced'
-              <br />
-              with the data:
-              <br />
-              {`{name: 'eric', product_id: '123'}`}
-            </Box>
           </Box>
 
           <Center>
@@ -138,18 +123,24 @@ const GET_ORDER = gql`
 
 const CurrentOrder = ({ id }) => {
   const [orderCopy, setOrderCopy] = useState({})
+  const sessionChannel = useContext(SessionChannelContext)
 
-  const { data } = useQuery(GET_ORDER, {
+  const { data, refetch } = useQuery(GET_ORDER, {
     variables: { id },
     onCompleted: data => setOrderCopy(data.order)
   })
 
+  useEventHandler(sessionChannel, 'OrderUpdated', () => { refetch() })
+
   const onClickEditOrder = () => {}
+
+  if (!data?.order)
+    return null
 
   const updatedAttributes =
     Object.entries(orderCopy)
       .reduce((acc, [key, value]) => {
-        if (value !== data.order[key]) {
+        if (value !== data?.order[key]) {
           return { ...acc, [key]: value }
         } else {
           return acc
@@ -169,13 +160,15 @@ const CurrentOrder = ({ id }) => {
 
       {(data &&
         <>
-          Current order data
+          Current Order state
           <pre style={{ fontSize: '11.5px' }}>
-            {JSON.stringify(data?.order, null, 2)}
+            <b>
+              {JSON.stringify(withoutKey('__typename', data?.order), null, 2)}
+            </b>
           </pre>
 
           <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
-            <FormControl w='250px'>
+            <FormControl>
               <FormLabel fontWeight='bold'>Name</FormLabel>
               <Input
                 value={orderCopy.name || ''}
@@ -183,7 +176,7 @@ const CurrentOrder = ({ id }) => {
               />
             </FormControl>
 
-            <FormControl w='250px'>
+            <FormControl>
               <FormLabel fontWeight='bold'>Product ID</FormLabel>
               <Input
                 value={orderCopy.productId || ''}
@@ -202,32 +195,27 @@ const CurrentOrder = ({ id }) => {
 
           <pre p='0'>
             {allowSave &&
-            <>
-              Pressing save will send this to the backend
               <Box fontSize='13px'>
-                {`
-  fetch('http://your-server/command', {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      command: 'UpdateOrderAttributes',
-      data: {
-        orderId: '${data?.order.id}'
-        updatedAttributes: {
-          ${Object.entries(updatedAttributes)
-            .reduce((acc, [key, value]) =>
-              (`${acc}${acc.length > 0 ? '          ' : ''}${key}: '${value.trim()}',\n`),
-            '').slice(0, -2)}
-        }
+                {`fetch('https://your-server/command', {
+  method: 'POST',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    command: 'UpdateOrderAttributes',
+    data: {
+      orderId: '${data?.order.id}'
+      updatedAttributes: {
+        ${Object.entries(updatedAttributes)
+          .reduce((acc, [key, value]) =>
+            (`${acc}${acc.length > 0 ? '          ' : ''}${key}: '${value.trim()}',\n`),
+          '').slice(0, -2)}
       }
-    })
+    }
   })
-              `}
-              </Box>
-            </> ||
+})`}
+              </Box> ||
               <Box>
                 Make some valid edits
                 <br />(at least 3 chars in each field)
