@@ -65,7 +65,7 @@ const App = () => {
 
       <Box>
         <Heading size='md' m='2' pb='4'>
-          Example lifecycle of an "Order" as a Stream of Events and the current state [of that stream] stored in mongo for reading
+          Example lifecycle of an "Order" as a Stream of Events and the current state [based on that stream] stored in mongo for reading
         </Heading>
 
         <Flex>
