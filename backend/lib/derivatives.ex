@@ -44,6 +44,7 @@ defmodule Derivatives do
         acc,
         MapHelpers.atomize_keys(event.data["updated_attributes"])
       )
+      |> Map.merge(%{updated_at: event.created_at})
     end
   end
 end

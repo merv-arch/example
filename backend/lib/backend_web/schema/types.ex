@@ -9,6 +9,7 @@ defmodule BackendWeb.Schema.Types do
     field(:name, non_null(:string))
     field(:product_id, non_null(:string))
     field(:created_at, non_null(:datetime))
+    field(:updated_at, :datetime)
   end
 
   input_object :sort_arg do

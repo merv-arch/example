@@ -12,6 +12,6 @@ defmodule BackendWeb.Resolvers.Content do
   end
 
   def stream_events(%{stream_name: stream_name}, _info) do
-    Backend.EventStore.read_stream_forward(stream_name)
+    Backend.EventStore.read_stream_backward(stream_name)
   end
 end

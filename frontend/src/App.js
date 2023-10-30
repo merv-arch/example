@@ -13,7 +13,7 @@ import { useEventHandler } from '@ericlathrop/phoenix-js-react-hooks'
 const GET_ORDER = gql`
   query GetOrder($id: String) {
     order(id: $id)  {
-      id name productId createdAt
+      id name productId createdAt updatedAt
     }
   }
 `
@@ -24,19 +24,22 @@ const App = () => {
   const sessionId = useContext(SessionContext)
   const sessionChannel = useContext(SessionChannelContext)
   const [currentOrderId, setCurrentOrderId] = useState(null)
+  const [accordionIndex, setAccordionIndex] = useState(0)
 
   const [fetchOrder, { data, refetch }] = useLazyQuery(GET_ORDER, {
     variables: { id: currentOrderId }
   })
 
-  const currentOrder = data?.order
-
-  useEventHandler(sessionChannel, 'OrderInserted', data => { setCurrentOrderId(data.orderId) })
-  useEventHandler(sessionChannel, 'OrderReplaced', () => { refetch() })
+  useEventHandler(sessionChannel, 'OrderInserted', ({ orderId }) => { setCurrentOrderId(orderId) })
+  useEventHandler(sessionChannel, 'OrderReplaced', () => refetch())
 
   useEffect(() => {
-    if (currentOrderId) fetchOrder()
+    if (currentOrderId) { fetchOrder() }
   }, [currentOrderId])
+
+  useEffect(() => {
+    if (data) setAccordionIndex(1)
+  }, [data])
 
   const onClickPlaceOrder = () =>
     command({
@@ -49,6 +52,10 @@ const App = () => {
     })
       .then(res => { if (res.ok) { return null } else { throw res } })
       .catch(e => e.text().then(e => window.alert(e)))
+
+  const allowPlaceOrder =
+    name.trim().length > 2 &&
+    productId.trim().length > 2
 
   return (
     <Box p='5'>
@@ -68,7 +75,7 @@ const App = () => {
             </Heading>
 
             <Box p={3}>
-              <Accordion defaultIndex={[0]}>
+              <Accordion index={accordionIndex}>
                 <AccordionItem>
                   <AccordionButton>
                     <Box as='span' flex='1' textAlign='left'>
@@ -91,7 +98,7 @@ const App = () => {
 
                       <Button
                         mt={3}
-                        isDisabled={name.trim().length === 0 || productId.trim().length === 0}
+                        isDisabled={!allowPlaceOrder}
                         onClick={onClickPlaceOrder}
                       >
                         Place Order
@@ -119,7 +126,7 @@ const App = () => {
                   </AccordionPanel>
                 </AccordionItem>
 
-                {currentOrder &&
+                {data?.order &&
                   <AccordionItem>
                     <AccordionButton>
                       <Box as='span' flex='1' textAlign='left'>
@@ -129,12 +136,12 @@ const App = () => {
                     </AccordionButton>
 
                     <AccordionPanel pb={4}>
-                      <UpdateOrderAttributes order={currentOrder} />
+                      <UpdateOrderAttributes order={data.order} />
                     </AccordionPanel>
                   </AccordionItem>}
               </Accordion>
 
-              {!currentOrder &&
+              {!data?.order &&
                 <Text>↑ start with creating a new order ↑</Text>}
             </Box>
 
@@ -147,8 +154,12 @@ const App = () => {
           </Center>
 
           <Box p={3} border='2px solid gray'>
-            {currentOrder &&
-              <OrderStreamEvents orderId={currentOrder.id} />}
+            <Heading size='md' mb='5'>
+              Stream Events
+            </Heading>
+
+            {data?.order &&
+              <OrderStreamEvents orderId={data.order.id} />}
           </Box>
 
           <Center>
@@ -158,8 +169,24 @@ const App = () => {
           </Center>
 
           <Box p={3} border='2px solid gray'>
-            {currentOrder &&
-              <OrderCurrentState orderId={currentOrder} />}
+            <Heading size='md' mb='5'>
+              Current State
+            </Heading>
+
+            {data?.order &&
+              <>
+                <Text>
+                  Pulled in via graphql from mongo
+                </Text>
+
+                <Box>
+                  <pre style={{ fontSize: '11.5px' }}>
+                    <b>
+                      {JSON.stringify(withoutKey('__typename', data.order), null, 2)}
+                    </b>
+                  </pre>
+                </Box>
+              </>}
           </Box>
         </Flex>
       </Box>
@@ -186,54 +213,37 @@ const OrderStreamEvents = ({ orderId }) => {
 
   return (
     <>
-      <Heading size='md'>
-        Resulting Stream Events
-      </Heading>
-
-      <Text>
-        Stream name: "Order:{orderId}"
+      <Text fontSize='15'>
+        Stream name:
+        <br />
+        "Order:{orderId}"
+        <br />
+        (newest first)
       </Text>
 
+      [
       <List spacing={2}>
         {data?.streamEvents.map(streamEvent =>
-          <ListItem fontSize='10px' key={streamEvent.eventId}>
+          <ListItem border='1px solid lightgray' as='div' p='1' ml='2' fontSize='10px' key={streamEvent.eventId}>
             <pre>
               {JSON.stringify(withoutKey('__typename', streamEvent), null, 2)}
             </pre>
           </ListItem>
         )}
       </List>
+      ]
     </>
-  )
-}
-
-const OrderCurrentState = ({ order }) => {
-  return (
-    <>
-      <Heading size='md' mb='5'>
-        Current State
-      </Heading>
-
-      <Text>
-        Pulled in via graphql from mongo
-      </Text>
-
-      <Box>
-        <pre style={{ fontSize: '11.5px' }}>
-          <b>
-            {JSON.stringify(withoutKey('__typename', order), null, 2)}
-          </b>
-        </pre>
-      </Box>
-    </>
-
   )
 }
 
 const UpdateOrderAttributes = ({ order }) => {
   const [orderCopy, setOrderCopy] = useState(order)
 
-  console.log('ORDER', order)
+  useEffect(() => {
+    setOrderCopy(order)
+  }, [order])
+
+  if (!order) return null
 
   const updatedAttributes =
     Object.entries(orderCopy)
@@ -304,7 +314,7 @@ const UpdateOrderAttributes = ({ order }) => {
       updatedAttributes: {
         ${Object.entries(updatedAttributes)
           .reduce((acc, [key, value]) =>
-            (`${acc}${acc.length > 0 ? '          ' : ''}${key}: '${value.trim()}',\n`),
+            (`${acc}${acc.length > 0 ? '        ' : ''}${key}: '${value?.trim()}',\n`),
           '').slice(0, -2)}
       }
     }

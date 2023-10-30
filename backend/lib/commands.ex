@@ -53,7 +53,7 @@ defmodule Commands do
         data: %{
           order_id: order_id,
           csr_name: csr_name,
-          updated_attributes: updated_attributes
+          updated_attributes: MapHelpers.underscore_keys(updated_attributes)
         },
         metadata: %{}
       }
