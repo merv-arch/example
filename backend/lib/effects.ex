@@ -3,7 +3,7 @@ defmodule Effects do
 
   @map %{
     "PlacedOrder" => ["CacheOrder"],
-    "UpdateOrderAttributes" => ["CacheOrder"]
+    "UpdatedOrderAttributes" => ["CacheOrder", "InformSession"]
   }
 
   def handle(event) do
@@ -18,6 +18,15 @@ defmodule Effects do
       %{id: event.data["order_id"]},
       Derivatives.Order.by_id(event.data["order_id"]),
       upsert: true
+    )
+  end
+
+  defp handle("InformSession", event) do
+    order = Derivatives.Order.by_id(event.data["order_id"])
+
+    BackendWeb.Endpoint.broadcast!(
+      "Session:#{order.session_id}",
+      "NewOrderStreamEvent", %{ id: order.id }
     )
   end
 end

@@ -26,7 +26,7 @@ defmodule Commands do
             name: name,
             product_id: product_id
           },
-          metadata: %{some: "metadata"}
+          metadata: %{}
         }
       ]
 
@@ -38,29 +38,29 @@ defmodule Commands do
     end
   end
 
-  # def handle(
-  #     "UpdateOrderAttributes",
-  #     %{
-  #       "orderId" => order_id,
-  #       "updatedAttributes" => updated_attributes,
-  #       "userName" => user_name
-  #     },
-  #     metadata
-  #   ) do
-  #   events = [
-  #     %EventData{
-  #       event_type: "UpdatedOrderAttributes",
-  #       data: %{
-  #         order_id: new_id,
-  #         user_name: user_name,
-  #         updated_attributes: updated_attributes
-  #       },
-  #       metadata: %{some: "metadata"}
-  #     }
-  #   ]
+  def handle(
+      "UpdateOrderAttributes",
+      %{
+        "orderId" => order_id,
+        "updatedAttributes" => updated_attributes,
+        "csrName" => csr_name
+      },
+      metadata
+    ) do
+    events = [
+      %EventData{
+        event_type: "UpdatedOrderAttributes",
+        data: %{
+          order_id: order_id,
+          csr_name: csr_name,
+          updated_attributes: updated_attributes
+        },
+        metadata: %{}
+      }
+    ]
 
-  #   EventStore.append_to_stream("Order:#{new_id}", :any_version, events)
+    EventStore.append_to_stream("Order:#{order_id}", :any_version, events)
 
-  #   {:ok, %{}}
-  # end
+    {:ok, %{}}
+  end
 end

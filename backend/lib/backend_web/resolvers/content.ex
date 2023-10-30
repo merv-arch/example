@@ -10,4 +10,8 @@ defmodule BackendWeb.Resolvers.Content do
       |> MapHelpers.atomize_keys()
     }
   end
+
+  def stream_events(%{stream_name: stream_name}, _info) do
+    Backend.EventStore.read_stream_forward(stream_name)
+  end
 end

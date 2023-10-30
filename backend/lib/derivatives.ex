@@ -39,7 +39,7 @@ defmodule Derivatives do
       }
     end
 
-    defp on(%{event_type: "UpdateOrderAttributes"} = event, acc) do
+    defp on(%{event_type: "UpdatedOrderAttributes"} = event, acc) do
       Map.merge(
         acc,
         MapHelpers.atomize_keys(event.data["updated_attributes"])

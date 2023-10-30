@@ -62,7 +62,23 @@ defmodule MongoDatabaseWatcher do
        ) do
     BackendWeb.Endpoint.broadcast!(
       "Session:#{session_id}",
-      "OrderInserted", %{ id: order_id }
+      "OrderInserted", %{ orderId: order_id }
+    )
+  end
+
+  defp process_doc(
+         %{
+           "operationType" => "replace",
+           "ns" => %{"coll" => "orders"},
+           "fullDocument" => %{
+             "id" => order_id,
+             "session_id" => session_id
+           }
+         }
+       ) do
+    BackendWeb.Endpoint.broadcast!(
+      "Session:#{session_id}",
+      "OrderReplaced", %{ id: order_id }
     )
   end
 

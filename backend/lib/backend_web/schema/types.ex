@@ -15,4 +15,12 @@ defmodule BackendWeb.Schema.Types do
     field(:field, non_null(:string))
     field(:direction, non_null(:integer))
   end
+
+  @desc "Stream Event"
+  object :stream_event do
+    field :event_id, non_null(:string)
+    field :event_type, non_null(:string)
+    field :data, non_null(:json)
+    field :created_at, non_null(:datetime)
+  end
 end
