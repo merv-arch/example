@@ -10,6 +10,7 @@ defmodule BackendWeb.Schema.Types do
     field(:product_id, non_null(:string))
     field(:created_at, non_null(:datetime))
     field(:updated_at, :datetime)
+    field(:last_csr_to_touch, :string)
   end
 
   input_object :sort_arg do

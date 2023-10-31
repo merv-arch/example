@@ -13,7 +13,7 @@ import { useEventHandler } from '@ericlathrop/phoenix-js-react-hooks'
 const GET_ORDER = gql`
   query GetOrder($id: String) {
     order(id: $id)  {
-      id name productId createdAt updatedAt
+      id name productId createdAt updatedAt lastCsrToTouch
     }
   }
 `
@@ -34,12 +34,22 @@ const App = () => {
   useEventHandler(sessionChannel, 'OrderReplaced', () => refetch())
 
   useEffect(() => {
-    if (currentOrderId) { fetchOrder() }
+    if (currentOrderId) fetchOrder()
   }, [currentOrderId])
 
   useEffect(() => {
-    if (data) setAccordionIndex(1)
+    if (currentOrderId && data) setAccordionIndex(1)
   }, [data])
+
+  useEffect(() => {
+    if (accordionIndex === 0) setCurrentOrderId(null)
+  }, [accordionIndex])
+
+  const onClickReset = () => {
+    setName('')
+    setProductId('')
+    setAccordionIndex(0)
+  }
 
   const onClickPlaceOrder = () =>
     command({
@@ -71,7 +81,7 @@ const App = () => {
         <Flex>
           <Box p={3} border='2px solid gray'>
             <Heading size='md'>
-              Available actions:
+              Available actions: <Button onClick={onClickReset}>reset</Button>
             </Heading>
 
             <Box p={3}>
@@ -79,12 +89,16 @@ const App = () => {
                 <AccordionItem>
                   <AccordionButton>
                     <Box as='span' flex='1' textAlign='left'>
-                      <b>Create an Order</b>
+                      <b>Place an Order</b>
                     </Box>
                     <AccordionIcon />
                   </AccordionButton>
 
                   <AccordionPanel pb={4}>
+                    <Text size='md' mb='5'>
+                      Placing an order will start a new stream
+                    </Text>
+
                     <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
                       <FormControl>
                         <FormLabel fontWeight='bold'>Customer Name</FormLabel>
@@ -100,6 +114,7 @@ const App = () => {
                         mt={3}
                         isDisabled={!allowPlaceOrder}
                         onClick={onClickPlaceOrder}
+                        colorScheme='purple'
                       >
                         Place Order
                       </Button>
@@ -136,6 +151,24 @@ const App = () => {
                     </AccordionButton>
 
                     <AccordionPanel pb={4}>
+                      <Text size='md' mb='5'>
+                        Now we have a stream, let's send another Command<br />
+                        to the server which will create another event and<br />
+                        link it to the Order stream, which will cause<br />
+                        the current state in mongo to be rebuilt<br />
+                        which will broadcast to the frontend (here)<br />
+                        which will cause graphql to refetch<br />
+                        A lot of cause & effect happening here.
+                      </Text>
+
+                      <Text size='md' mb='5'>
+                        You'll notice this form takes a<br />
+                        customer service rep. name<br />
+                        If your production system you'll probably<br />
+                        send "userId" in order to track<br />
+                        "who made this change"
+                      </Text>
+
                       <UpdateOrderAttributes order={data.order} />
                     </AccordionPanel>
                   </AccordionItem>}
@@ -238,6 +271,7 @@ const OrderStreamEvents = ({ orderId }) => {
 
 const UpdateOrderAttributes = ({ order }) => {
   const [orderCopy, setOrderCopy] = useState(order)
+  const [csrName, setCsrName] = useState('')
 
   useEffect(() => {
     setOrderCopy(order)
@@ -261,19 +295,20 @@ const UpdateOrderAttributes = ({ order }) => {
       data: {
         orderId: order.id,
         updatedAttributes,
-        csrName: 'csr_123'
+        csrName: csrName.trim()
       }
     })
 
   const allowSave =
     Object.entries(updatedAttributes).length > 0 &&
     orderCopy.name.trim().length > 2 &&
-    orderCopy.productId.trim().length > 2
+    orderCopy.productId.trim().length > 2 &&
+    csrName.trim().length > 2
 
   return (
     <>
       <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
-        <FormControl>
+        <FormControl mb='2'>
           <FormLabel fontWeight='bold'>Customer Name</FormLabel>
           <Input
             value={orderCopy.name || ''}
@@ -281,11 +316,19 @@ const UpdateOrderAttributes = ({ order }) => {
           />
         </FormControl>
 
-        <FormControl>
+        <FormControl mb='2'>
           <FormLabel fontWeight='bold'>Product ID</FormLabel>
           <Input
             value={orderCopy.productId || ''}
             onChange={e => setOrderCopy({ ...orderCopy, productId: e.target.value })}
+          />
+        </FormControl>
+
+        <FormControl mb='2'>
+          <FormLabel fontWeight='bold'>CSR name</FormLabel>
+          <Input
+            value={csrName}
+            onChange={e => setCsrName(e.target.value)}
           />
         </FormControl>
 
@@ -311,6 +354,7 @@ const UpdateOrderAttributes = ({ order }) => {
     command: 'UpdateOrderAttributes',
     data: {
       orderId: '${order.id}'
+      csrName: '${csrName.trim()}',
       updatedAttributes: {
         ${Object.entries(updatedAttributes)
           .reduce((acc, [key, value]) =>

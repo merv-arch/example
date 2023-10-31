@@ -44,7 +44,12 @@ defmodule Derivatives do
         acc,
         MapHelpers.atomize_keys(event.data["updated_attributes"])
       )
-      |> Map.merge(%{updated_at: event.created_at})
+      |> Map.merge(
+        %{
+          updated_at: event.created_at,
+          last_csr_to_touch: event.data["csr_name"]
+        }
+      )
     end
   end
 end
