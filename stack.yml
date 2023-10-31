@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  backend-demo:
+    image: localhost:5000/merv-backend:sha
+    deploy:
+      update_config:
+        monitor: 30s
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      labels:
+        - traefik.enable=true
+        - traefik.http.services.neo.loadbalancer.server.port=4000
+        - traefik.http.routers.neo-rebounded-https.rule=Host(`backend-demo.mervarch.com`)
+        - traefik.http.routers.neo-rebounded-https.entrypoints=https
+        - traefik.http.routers.neo-rebounded-https.tls.certresolver=le
+    networks:
+      rebounded:
+
+  demo:
+    image: localhost:5000/merv-frontend:sha
+    deploy:
+      update_config:
+        monitor: 30s
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      labels:
+        - traefik.enable=true
+        - traefik.http.services.www.loadbalancer.server.port=3000
+        - traefik.http.routers.www-rebounded-https.rule=Host(`demo.mervarch.com`)
+        - traefik.http.routers.www-rebounded-https.entrypoints=https
+        - traefik.http.routers.www-rebounded-https.tls.certresolver=le
+    networks:
+      rebounded:
+
+networks:
+  rebounded:
+    external: true

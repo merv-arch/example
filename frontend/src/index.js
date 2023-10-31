@@ -15,7 +15,7 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 const SessionSocketProvider = ({ children }) => {
   const sessionId = useContext(SessionContext)
 
-  const socketUrl = 'ws://localhost:4000/socket'
+  const socketUrl = `ws${process.env.NODE_ENV === 'production' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/socket`
   const socketOptions = { params: { sessionId } }
 
   return (
@@ -31,7 +31,7 @@ const AppWithApollo = () => {
   const cache = new InMemoryCache()
 
   const httpLink = createHttpLink({
-    uri: 'http://localhost:4000/gql'
+    uri: `http${process.env.NODE_ENV === 'production' ? 's' : ''}://${process.env.REACT_APP_BACKEND_HOST}/gql`
   })
 
   const authLink = setContext((_, { headers }) => {

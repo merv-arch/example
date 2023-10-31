@@ -1,0 +1,21 @@
+FROM elixir:1.15.4-alpine
+WORKDIR /app
+RUN apk add --no-cache curl
+RUN mix local.hex --force && \
+mix local.rebar --force
+EXPOSE 4000
+ENV PORT=4000
+ENV MIX_ENV=prod
+ENV MONGO_HOSTNAME=common_mongo
+ENV MONGO_DATABASE=merv
+ENV POSTGRES_HOSTNAME=common_postgres
+ENV POSTGRES_ES_DATABASE=merv_es
+ENV SECRET_KEY_BASE=3Z7WuRc5DqQ5B6bDFWXIPzPdks5IGecM5WC+J8Dhuz0nhKmQf8NzlSsqy4c3BtPD
+
+# IAM user neo_app
+# ENV AWS_ACCESS_KEY=AKIA3UQ7UN65VR3XIN4H
+# ENV AWS_SECRET_ACCESS_KEY=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
+
+COPY . .
+RUN mix do deps.get, deps.compile, compile
+CMD ["mix", "phx.server"]
