@@ -1,6 +1,6 @@
 import Config
 
-config :backend_web, BackendWeb.Endpoint,
+config :backend, BackendWeb.Endpoint,
   url: [host: "backend-demo.mervarch.com", port: 80],
   check_origin: [
   "//*.mervarch.com",
