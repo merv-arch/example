@@ -1,5 +1,11 @@
 import Config
 
+config :backend_web, BackendWeb.Endpoint,
+  url: [host: "backend-demo.mervarch.com", port: 80],
+  check_origin: [
+  "//*.mervarch.com",
+]
+
 # Configures Swoosh API Client
 config :swoosh, api_client: Swoosh.ApiClient.Finch, finch_name: Backend.Finch
 
