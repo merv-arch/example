@@ -366,7 +366,8 @@ const UpdateOrderAttributes = ({ order }) => {
 })`}
           </Box>) ||
             <Box>
-              Make some valid edits
+              Change the customer name and/or product id,<br />
+              and add a CSR name.
               <br />(at least 3 chars in each field)
             </Box>}
       </pre>
