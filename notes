@@ -1,0 +1,23 @@
+Steps I took to create this example project:
+
+using fish shell:
+
+frontend:
+  - docker run -it --rm -v (pwd):/code node:alpine sh
+  - cd /code
+  - yarn create react-app frontend
+  - exit (the container)
+  - sudo chown -R (whoami):(whoami) frontend
+  - rm -rf frontend/node_modules/*
+
+backend:
+  - docker run -it --rm -v (pwd):/code elixir:alpine sh
+  - mix archive.install hex phx_new
+  - mix phx.new backend --no-ecto --no-gettext --no-html --no-live --no-assets
+  - exit (the container)
+  - sudo chown -R (whoami):(whoami) backend
+  - rm -rf backend/_build/*
+  - make this conf change noted in the default comment (needed for docker-compose)
+    # file: config/dev.exs
+    # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
+    http: [ip: {0, 0, 0, 0}, port: 4000],
