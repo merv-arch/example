@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   backend-demo:
-    image: localhost:5000/merv-backend:sha
+    image: localhost:5000/merv-backend:e249fc5
     deploy:
       update_config:
         monitor: 30s
@@ -11,15 +11,15 @@ services:
         order: start-first
       labels:
         - traefik.enable=true
-        - traefik.http.services.neo.loadbalancer.server.port=4000
-        - traefik.http.routers.neo-rebounded-https.rule=Host(`backend-demo.mervarch.com`)
-        - traefik.http.routers.neo-rebounded-https.entrypoints=https
-        - traefik.http.routers.neo-rebounded-https.tls.certresolver=le
+        - traefik.http.services.mervarch-backend-demo.loadbalancer.server.port=4000
+        - traefik.http.routers.mervarch-backend-demo-https.rule=Host(`backend-demo.mervarch.com`)
+        - traefik.http.routers.mervarch-backend-demo-https.entrypoints=https
+        - traefik.http.routers.mervarch-backend-demo-https.tls.certresolver=le
     networks:
-      rebounded:
+      feasible:
 
   demo:
-    image: localhost:5000/merv-frontend:sha
+    image: localhost:5000/merv-frontend:e249fc5
     deploy:
       update_config:
         monitor: 30s
@@ -28,13 +28,13 @@ services:
         order: start-first
       labels:
         - traefik.enable=true
-        - traefik.http.services.www.loadbalancer.server.port=3000
-        - traefik.http.routers.www-rebounded-https.rule=Host(`demo.mervarch.com`)
-        - traefik.http.routers.www-rebounded-https.entrypoints=https
-        - traefik.http.routers.www-rebounded-https.tls.certresolver=le
+        - traefik.http.services.mervarch-demo.loadbalancer.server.port=3000
+        - traefik.http.routers.mervarch-demo-https.rule=Host(`demo.mervarch.com`)
+        - traefik.http.routers.mervarch-demo-https.entrypoints=https
+        - traefik.http.routers.mervarch-demo-https.tls.certresolver=le
     networks:
-      rebounded:
+      feasible:
 
 networks:
-  rebounded:
+  feasible:
     external: true
