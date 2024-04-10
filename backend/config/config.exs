@@ -12,7 +12,14 @@ config :backend, Backend.EventStore,
   username: "postgres",
   password: "postgres",
   database: System.get_env("POSTGRES_EVENT_STORE_DB"),
-  hostname: System.get_env("POSTGRES_HOSTNAME")
+  hostname: System.get_env("POSTGRES_HOSTNAME"),
+    parameters: [
+    tcp_keepalives_idle: "60",
+    tcp_keepalives_interval: "5",
+    tcp_keepalives_count: "3"
+  ],
+  socket_options: [keepalive: true]
+
 
 config :backend, event_stores: [Backend.EventStore]
 
