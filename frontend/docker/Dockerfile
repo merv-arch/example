@@ -1,6 +1,6 @@
 FROM node:23-alpine
 
-RUN apk add --no-cache git openssh
+RUN apk add --no-cache openssh git
 
 WORKDIR /app
 
