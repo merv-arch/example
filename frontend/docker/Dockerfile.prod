@@ -6,7 +6,6 @@ ADD package.lock .
 RUN npm install
 ADD . /app
 
-# set ENV vars before yarn build
 ENV REACT_APP_ENV production
 ENV REACT_APP_BACKEND_HOST backend-demo.mervarch.com
 

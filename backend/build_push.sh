@@ -1,4 +1,4 @@
-REGISTRY=localhost:5000
+REGISTRY=registry.mervarch.com
 REPO=merv-backend
 
 docker build -f ./docker/Dockerfile.prod -t $REPO:latest .
