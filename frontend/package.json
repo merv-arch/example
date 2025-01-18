@@ -7,7 +7,7 @@
     "@chakra-ui/react": "^2.8.1",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@ericlathrop/phoenix-js-react-hooks": "^0.1.0",
+    "@ericlathrop/phoenix-js-react-hooks": "gitlab:codefist/phoenix-js-react-hooks",
     "framer-motion": "^10.16.4",
     "graphql": "^16.8.1",
     "localforage": "^1.10.0",
