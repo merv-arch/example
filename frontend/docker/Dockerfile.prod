@@ -1,4 +1,4 @@
-FROM node:20.5.1-alpine AS builder
+FROM node:23-alpine AS builder
 
 RUN apk add --no-cache openssh git
 
@@ -11,7 +11,7 @@ ADD . /app
 ENV REACT_APP_ENV=production
 ENV REACT_APP_BACKEND_HOST=backend-demo.mervarch.com
 
-RUN npm build
+RUN npm run build
 
 FROM node:20.5.1-alpine
 EXPOSE 3000
