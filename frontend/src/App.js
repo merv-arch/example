@@ -64,13 +64,17 @@ const App = () => {
       .catch(e => e.text().then(e => window.alert(e)))
 
   const allowPlaceOrder =
-    name.trim().length > 2 &&
-    productId.trim().length > 2
+    name.trim().length > 0 &&
+    productId.trim().length > 0
 
   return (
     <Box p='5'>
       <Heading size='md' mb='5'>
         Merv demo
+      </Heading>
+
+      <Heading color='red' size='md' mb='5'>
+        READ EVERYTHING HERE SLOWLY AND CAREFULLY
       </Heading>
 
       <Box>
@@ -100,6 +104,8 @@ const App = () => {
                     </Text>
 
                     <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
+                      {!data?.order &&
+                        <Text>↓ start with creating a new order ↓</Text>}
                       <FormControl>
                         <FormLabel fontWeight='bold'>Customer Name</FormLabel>
                         <Input value={name} onChange={e => setName(e.target.value)} />
@@ -173,9 +179,6 @@ const App = () => {
                     </AccordionPanel>
                   </AccordionItem>}
               </Accordion>
-
-              {!data?.order &&
-                <Text>↑ start with creating a new order ↑</Text>}
             </Box>
 
           </Box>
@@ -301,13 +304,18 @@ const UpdateOrderAttributes = ({ order }) => {
 
   const allowSave =
     Object.entries(updatedAttributes).length > 0 &&
-    orderCopy.name.trim().length > 2 &&
-    orderCopy.productId.trim().length > 2 &&
-    csrName.trim().length > 2
+    orderCopy.name.trim().length > 0 &&
+    orderCopy.productId.trim().length > 0 &&
+    csrName.trim().length > 0
 
   return (
     <>
       <Box backgroundColor='ghostwhite' border='2px solid lightgray' p={2} mb={5} mt={5}>
+        <Box>
+          Change the customer name and/or product id,<br />
+          and add a CSR name.
+        </Box>
+
         <FormControl mb='2'>
           <FormLabel fontWeight='bold'>Customer Name</FormLabel>
           <Input
@@ -335,6 +343,7 @@ const UpdateOrderAttributes = ({ order }) => {
         <Button
           mt={3}
           isDisabled={!allowSave}
+          colorScheme='purple'
           onClick={onClickEditOrder}
         >
           Save
@@ -364,13 +373,17 @@ const UpdateOrderAttributes = ({ order }) => {
     }
   })
 })`}
-          </Box>) ||
-            <Box>
-              Change the customer name and/or product id,<br />
-              and add a CSR name.
-              <br />(at least 3 chars in each field)
-            </Box>}
+          </Box>
+        )}
       </pre>
+
+      <Box>
+        Do this step multiple times, then analyze the events and final state ->
+      </Box>
+
+      <Box>
+        I realize this is a very simple and dumb example and that having an event named as generic as "UpdatedOrderAttributes" goes against the whole point of merv.  In a real merv app I use very specific Events such as "ManagerOverridePrice", "CsrFlagCustomerAsAngry", "AddNoteToOrder".  The more specific the events are the smarter your reactions to them can be.  Consider -> Allowing a manager to override the price of an item in a quote.  You might require that they send a reason along with that command.  One of the reactions to this event can be to send an email to the regional manage that contains the price change and the reason.  We might also LINK that event to a separate stream called "PriceOverridesByManagerX" which is used to generate a count and sum of all price adjustments by that manager.  Just try to shoe-horn such business logic into a CRUD based system...not natural, not fun.
+      </Box>
     </>
   )
 }

@@ -2,19 +2,19 @@ FROM node:20.5.1-alpine as builder
 
 WORKDIR /app
 ADD package.json .
-ADD yarn.lock .
-RUN yarn
+ADD package.lock .
+RUN npm install
 ADD . /app
 
 # set ENV vars before yarn build
 ENV REACT_APP_ENV production
 ENV REACT_APP_BACKEND_HOST backend-demo.mervarch.com
 
-RUN yarn build
+RUN npm build
 
 FROM node:20.5.1-alpine
 EXPOSE 3000
 WORKDIR /app
-RUN yarn global add serve
+RUN npm install -g serve
 COPY --from=builder /app/build /app/build
 CMD ["serve", "-s", "build"]

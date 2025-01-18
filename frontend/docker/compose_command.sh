@@ -2,6 +2,6 @@
 
 cp /app/docker/dot_env.local /app/.env.local
 
-yarn
+npm install
 
-yarn start
+npm start
