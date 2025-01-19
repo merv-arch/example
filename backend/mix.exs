@@ -42,7 +42,7 @@ defmodule Backend.MixProject do
       {:plug_cowboy, "~> 2.5"},
       {:eventstore, "~> 1.4"},
       {:uuid, "~> 1.1"},
-      {:mongodb_driver, "~> 1.5.0"},
+      {:mongodb_driver, "~> 1.0.0"},
       {:corsica, "~> 2.1.2"},
       {:absinthe, "~> 1.7.0"},
       {:absinthe_plug, "~> 1.5"}
