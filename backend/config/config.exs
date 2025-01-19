@@ -36,7 +36,7 @@ config :backend, BackendWeb.Endpoint,
 config :backend,
   mongo_seeds: [System.get_env("MONGO_HOSTNAME")],
   mongo_database: System.get_env("MONGO_DATABASE"),
-  mongo_pool_size: 1
+  mongo_pool_size: 3
 
 # Configures the mailer
 #
