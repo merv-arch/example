@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react'
 import {
   Button, Heading, Box, FormControl, FormLabel, Input, Flex,
-  Center, Text, List, ListItem,
+  Center, Text, List, ListItem, Select,
   Accordion, AccordionItem, AccordionButton, AccordionIcon, AccordionPanel
 } from '@chakra-ui/react'
 import { command, withoutKey } from 'tools'
@@ -334,10 +334,14 @@ const UpdateOrderAttributes = ({ order }) => {
 
         <FormControl mb='2'>
           <FormLabel fontWeight='bold'>CSR name</FormLabel>
-          <Input
-            value={csrName}
-            onChange={e => setCsrName(e.target.value)}
-          />
+
+          <Select value={csrName} onChange={e => setCsrName(e.target.value)}placeholder="Select CSR (who's making the change">
+            <option value='Crash Override'>Crash Override</option>
+            <option value='Acid Burn'>Acid Burn</option>
+            <option value='Lord Nikon'>Lord Nikon</option>
+            <option value='Cereal Killer'>Cereal Killer</option>
+            <option value='Joey'>Joey</option>
+          </Select>
         </FormControl>
 
         <Button
@@ -382,7 +386,7 @@ const UpdateOrderAttributes = ({ order }) => {
       </Box>
 
       <Box>
-        I realize this is a very simple and dumb example and that having an event named as generic as "UpdatedOrderAttributes" goes against the whole point of merv.  In a real merv app I use very specific Events such as "ManagerOverridePrice", "CsrFlagCustomerAsAngry", "AddNoteToOrder".  The more specific the events are the smarter your reactions to them can be.  Consider -> Allowing a manager to override the price of an item in a quote.  You might require that they send a reason along with that command.  One of the reactions to this event can be to send an email to the regional manage that contains the price change and the reason.  We might also LINK that event to a separate stream called "PriceOverridesByManagerX" which is used to generate a count and sum of all price adjustments by that manager.  Just try to shoe-horn such business logic into a CRUD based system...not natural, not fun.
+        I realize this is a very simple and dumb example and that having an event named as generic as "UpdatedOrderAttributes" goes against the whole point of merv.  In a real merv app I use very specific Events such as "ManagerOverrodePrice", "CsrFlaggedCustomerAsAngry", "AddedNoteToOrder".  The more specific the events are the smarter your reactions to them can be.  Consider -> Allowing a manager to override the price of an item in a quote.  You might require that they send a reason along with that command.  One of the reactions to this event can be to send an email to the regional manage that contains the price change and the reason.  We might also LINK that event to a separate stream called "PriceOverridesByManagerX" which is used to generate a count and sum of all price adjustments by that manager.  Just try to shoe-horn such business logic into a CRUD based system...not natural, not fun.
       </Box>
     </>
   )
